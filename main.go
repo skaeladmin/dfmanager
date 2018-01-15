@@ -8,10 +8,13 @@ import (
 	"os"
 )
 
+var version = "master"
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "dfmanager"
 	app.Usage = "Dialogflow Agent Manager"
+	app.Version = version
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{

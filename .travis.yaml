@@ -9,3 +9,4 @@ script:
 after_success:
  - curl --request POST "https://goreportcard.com/checks" --data "repo=github.com/skaeladmin/dfmanager"
  - bash <(curl -s https://codecov.io/bash)
+# - test -n "$TRAVIS_TAG" && curl -sL https://git.io/goreleaser | bash

@@ -20,9 +20,10 @@ dfmanager [global options] command [command options] [arguments...]
 
 ```
 COMMANDS:
-     export, e  exports agent from dialogflow
-     import, i  imports agent to dialogflow
-     help, h    Shows a list of commands or help for one command
+     export, e   exports agent from dialogflow
+     import, i   imports agent to dialogflow
+     restore, r  restores (replaces) agent in dialogflow
+     help, h     Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    -k value, --key value      Google Cloud Platform Auth Key [$GCP_KEY]
