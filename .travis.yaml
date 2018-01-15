@@ -1,0 +1,11 @@
+sudo: false
+language: go
+go:
+  - 1.9
+
+script:
+  - make get-build-deps vendor build
+
+after_success:
+ - curl --request POST "https://goreportcard.com/checks" --data "repo=github.com/skaeladmin/dfmanager"
+ - bash <(curl -s https://codecov.io/bash)

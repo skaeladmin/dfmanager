@@ -1,0 +1,45 @@
+hash: 88998ea6674af6f450557ad3d7359ca0cac9cdf969a869792ab1d8167ffc7f8c
+updated: 2018-01-15T22:45:40.265443+03:00
+imports:
+- name: cloud.google.com/go
+  version: 290422ce3a4bcdb0c7998c2a994e23bc950b0bdb
+  subpackages:
+  - compute/metadata
+- name: github.com/golang/protobuf
+  version: 1e59b77b52bf8e4b449a57e6f79f21226d571845
+  subpackages:
+  - proto
+- name: golang.org/x/net
+  version: 0a9397675ba34b2845f758fe3cd68828369c6517
+  subpackages:
+  - context
+  - context/ctxhttp
+- name: golang.org/x/oauth2
+  version: f95fa95eaa936d9d87489b15d1d18b97c1ba9c28
+  subpackages:
+  - google
+  - internal
+  - jws
+  - jwt
+- name: google.golang.org/api
+  version: b804618854e387dc7fdd9e50496183ddcbb4b120
+  subpackages:
+  - dialogflow/v2beta1
+  - gensupport
+  - googleapi
+  - googleapi/internal/uritemplates
+- name: google.golang.org/appengine
+  version: 9d8544a6b2c7df9cff240fcf92d7b2f59bc13416
+  subpackages:
+  - internal
+  - internal/app_identity
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/modules
+  - internal/remote_api
+  - internal/urlfetch
+  - urlfetch
+- name: gopkg.in/urfave/cli.v1
+  version: cfb38830724cc34fedffe9a2a29fb54fa9169cd1
+testImports: []
