@@ -5,7 +5,7 @@
 # Dialogflow Agent Manager
 
 ## Installation
-Make sure you have a working Go environment. [See Golang install instructions]()http://golang.org/doc/install.html)
+Make sure you have a working Go environment. [See Golang install instructions](http://golang.org/doc/install.html)
 
 To install, run:
 ```sh
