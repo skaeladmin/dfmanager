@@ -68,6 +68,24 @@ func main() {
 				return nil
 			},
 		},
+		{
+			Name:    "restore",
+			Aliases: []string{"r"},
+			Usage:   "restores (replaces) agent in dialogflow",
+			Action: func(c *cli.Context) error {
+				manager, err := NewCliDFManager(c)
+				if nil != err {
+					return cli.NewExitError(err, 1)
+				}
+
+				err = manager.Restore()
+				if nil != err {
+					return cli.NewExitError(err, 1)
+				}
+
+				return nil
+			},
+		},
 	}
 
 	app.Run(os.Args)

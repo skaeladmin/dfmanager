@@ -33,6 +33,8 @@ func NewManager(prjKey []byte, prjName, fName string) (*Manager, error) {
 //Export downloads Dialogflow agent and saves to file
 //If file name is not provided, file with GCP project name and extension .zip will be created in work directory
 func (m *Manager) Export() error {
+
+	fmt.Println("Exporting agent...")
 	rs, err := m.srv.Projects.Agent.Export("projects/"+m.prj, &dialogflow.ExportAgentRequest{}).Do()
 	if nil != err {
 		return err
@@ -70,27 +72,15 @@ func (m *Manager) Export() error {
 
 //Import reads archive and uploads it to Dialogflow
 func (m *Manager) Import() error {
-	f, err := os.Open(m.getFilename())
+	cont, err := m.readAgentContent()
 	if nil != err {
 		return err
 	}
-
-	var buf bytes.Buffer
-	w := bufio.NewWriter(base64.NewEncoder(base64.StdEncoding, &buf))
-	_, err = w.ReadFrom(f)
-	if nil != err {
-		return err
-	}
-
-	err = w.Flush()
-	if nil != err {
-		return err
-	}
-	defer f.Close()
 
 	rq := &dialogflow.ImportAgentRequest{}
-	rq.AgentContent = buf.String()
+	rq.AgentContent = cont
 
+	fmt.Println("Importing agent from backup...")
 	rs, err := m.srv.Projects.Agent.Import("projects/"+m.prj, rq).Do()
 	if nil != err {
 		return err
@@ -99,8 +89,56 @@ func (m *Manager) Import() error {
 		return errors.New(rs.Error.Message)
 	}
 
+	fmt.Println("Import completed successully")
 	return nil
 
+}
+
+//Import reads archive and uploads it to Dialogflow
+func (m *Manager) Restore() error {
+	cont, err := m.readAgentContent()
+	if nil != err {
+		return err
+	}
+
+	rq := &dialogflow.RestoreAgentRequest{}
+	rq.AgentContent = cont
+
+	fmt.Println("Restoring agent from backup...")
+	rs, err := m.srv.Projects.Agent.Restore("projects/"+m.prj, rq).Do()
+	if nil != err {
+		return err
+	}
+	if nil != rs.Error {
+		return errors.New(rs.Error.Message)
+	}
+
+	fmt.Println("Restore completed successully")
+	return nil
+
+}
+
+func (m *Manager) readAgentContent() (string, error) {
+	fmt.Println("Reading agent content...")
+	f, err := os.Open(m.getFilename())
+	if nil != err {
+		return "", err
+	}
+	defer f.Close()
+
+	var buf bytes.Buffer
+	w := bufio.NewWriter(base64.NewEncoder(base64.StdEncoding, &buf))
+	_, err = w.ReadFrom(f)
+	if nil != err {
+		return "", err
+	}
+
+	err = w.Flush()
+	if nil != err {
+		return "", err
+	}
+
+	return buf.String(), nil
 }
 
 //getFilename uses provided file name or builds default one based on project name
