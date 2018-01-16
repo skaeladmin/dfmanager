@@ -17,7 +17,7 @@ help:
 	@echo "checkstyle - gofmt+golint+misspell"
 
 get-build-deps:
-	$(GO) get $(BUILD_DEPS)
+	$(GO) get github.com/alecthomas/gometalinter
 	gometalinter --install
 
 vendor:
