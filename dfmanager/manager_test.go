@@ -8,7 +8,7 @@ import (
 	"google.golang.org/api/dialogflow/v2beta1"
 )
 
-func ExampleDfManager() {
+func ExampleManager() {
 	f, err := ioutil.ReadFile("someFileName")
 	checkError(err)
 

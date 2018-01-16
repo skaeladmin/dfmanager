@@ -6,6 +6,7 @@ import (
 	"gopkg.in/urfave/cli.v1"
 	"io/ioutil"
 	"os"
+	"log"
 )
 
 var version = "master"
@@ -91,7 +92,10 @@ func main() {
 		},
 	}
 
-	app.Run(os.Args)
+	err := app.Run(os.Args)
+	if nil != err {
+		log.Fatal(err)
+	}
 }
 
 //NewCliDFManager parses cli context and builds DFManager instance based on provided args

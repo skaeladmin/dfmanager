@@ -89,12 +89,12 @@ func (m *Manager) Import() error {
 		return errors.New(rs.Error.Message)
 	}
 
-	fmt.Println("Import completed successully")
+	fmt.Println("Import completed successfully")
 	return nil
 
 }
 
-//Import reads archive and uploads it to Dialogflow
+//Restore reads archive and restores it in Dialogflow
 func (m *Manager) Restore() error {
 	cont, err := m.readAgentContent()
 	if nil != err {
@@ -113,7 +113,7 @@ func (m *Manager) Restore() error {
 		return errors.New(rs.Error.Message)
 	}
 
-	fmt.Println("Restore completed successully")
+	fmt.Println("Restore completed successfully")
 	return nil
 
 }
