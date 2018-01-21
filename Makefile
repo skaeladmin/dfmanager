@@ -33,9 +33,9 @@ checkstyle:
 fmt:
 	gofmt -l -w -s ${GOFILES_NOVENDOR}
 
-# Builds chathook
-build-service: checkstyle test
-	CGO_ENABLED=0 GOOS=linux $(GO) build ${BUILD_INFO_LDFLAGS} -o ${BINARY_DIR}/${service} ./${service}
+# Builds dfmanager
+build: checkstyle test
+	CGO_ENABLED=0 GOOS=linux $(GO) build ${BUILD_INFO_LDFLAGS} -o ${BINARY_DIR}/dfmanager ./
 
 run:
 	realize start --name ${service}
