@@ -35,7 +35,7 @@ func NewManager(prjKey []byte, prjName, fName string) (*Manager, error) {
 func (m *Manager) Export() error {
 
 	fmt.Println("Exporting agent...")
-	rs, err := m.srv.Projects.Agent.Export("projects/"+m.prj, &dialogflow.ExportAgentRequest{}).Do()
+	rs, err := m.srv.Projects.Agent.Export("projects/"+m.prj, &dialogflow.GoogleCloudDialogflowV2beta1ExportAgentRequest{}).Do()
 	if nil != err {
 		return err
 	}
@@ -43,7 +43,7 @@ func (m *Manager) Export() error {
 		return errors.New(rs.Error.Message)
 	}
 
-	var exportRS dialogflow.ExportAgentResponse
+	var exportRS dialogflow.GoogleCloudDialogflowV2beta1ExportAgentResponse
 	err = json.Unmarshal(rs.Response, &exportRS)
 	if nil != err {
 		return err
@@ -77,7 +77,7 @@ func (m *Manager) Import() error {
 		return err
 	}
 
-	rq := &dialogflow.ImportAgentRequest{}
+	rq := &dialogflow.GoogleCloudDialogflowV2beta1ImportAgentRequest{}
 	rq.AgentContent = cont
 
 	fmt.Println("Importing agent from backup...")
@@ -101,7 +101,7 @@ func (m *Manager) Restore() error {
 		return err
 	}
 
-	rq := &dialogflow.RestoreAgentRequest{}
+	rq := &dialogflow.GoogleCloudDialogflowV2beta1RestoreAgentRequest{}
 	rq.AgentContent = cont
 
 	fmt.Println("Restoring agent from backup...")
