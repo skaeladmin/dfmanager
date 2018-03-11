@@ -30,6 +30,12 @@ func NewManager(prjKey []byte, prjName, fName string) (*Manager, error) {
 	return &Manager{srv: service, prj: prjName, fName: fName}, nil
 }
 
+// SetFilename sets provided name as filename
+func (m *Manager) SetFilename(name string) *Manager {
+	m.fName = name
+	return m
+}
+
 //Export downloads Dialogflow agent and saves to file
 //If file name is not provided, file with GCP project name and extension .zip will be created in work directory
 func (m *Manager) Export() error {
