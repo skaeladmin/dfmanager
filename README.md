@@ -40,10 +40,10 @@ func main() {
 	f, err := ioutil.ReadFile("someFileName")
 	checkError(err)
 
-	m, err := NewManager(f, "myDFProject", "export.zip")
+	m, err := NewManager(f, "myDFProject")
 	checkError(err)
 
-	err = m.Export()
+	err = m.Export("export.zip")
 	checkError(err)
 }
 
