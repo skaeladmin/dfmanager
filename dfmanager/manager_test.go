@@ -12,10 +12,10 @@ func ExampleManager() {
 	f, err := ioutil.ReadFile("someFileName")
 	checkError(err)
 
-	m, err := NewManager(f, "myDFProject", "export.zip")
+	m, err := NewManager(f, "myDFProject")
 	checkError(err)
 
-	err = m.Export()
+	err = m.Export("export.zip")
 	checkError(err)
 }
 
@@ -55,11 +55,10 @@ func TestManager_getFilename(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &Manager{
-				srv:   tt.fields.srv,
-				prj:   tt.fields.prj,
-				fName: tt.fields.fName,
+				srv: tt.fields.srv,
+				prj: tt.fields.prj,
 			}
-			if got := m.getFilename(); got != tt.want {
+			if got := m.getFilename(tt.fields.fName); got != tt.want {
 				t.Errorf("Manager.getFilename() = %v, want %v", got, tt.want)
 			}
 		})

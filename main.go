@@ -5,8 +5,8 @@ import (
 	"github.com/skaeladmin/dfmanager/dfmanager"
 	"gopkg.in/urfave/cli.v1"
 	"io/ioutil"
-	"os"
 	"log"
+	"os"
 )
 
 var version = "master"
@@ -36,60 +36,9 @@ func main() {
 	}
 
 	app.Commands = []cli.Command{
-		{
-			Name:    "export",
-			Aliases: []string{"e"},
-			Usage:   "exports agent from dialogflow",
-			Action: func(c *cli.Context) error {
-				manager, err := NewCliDFManager(c)
-				if nil != err {
-					return cli.NewExitError(err, 1)
-				}
-
-				err = manager.Export()
-				if nil != err {
-					return cli.NewExitError(err, 1)
-				}
-
-				return nil
-			},
-		},
-		{
-			Name:    "import",
-			Aliases: []string{"i"},
-			Usage:   "imports agent to dialogflow",
-			Action: func(c *cli.Context) error {
-				manager, err := NewCliDFManager(c)
-				if nil != err {
-					return cli.NewExitError(err, 1)
-				}
-
-				err = manager.Import()
-				if nil != err {
-					return cli.NewExitError(err, 1)
-				}
-
-				return nil
-			},
-		},
-		{
-			Name:    "restore",
-			Aliases: []string{"r"},
-			Usage:   "restores (replaces) agent in dialogflow",
-			Action: func(c *cli.Context) error {
-				manager, err := NewCliDFManager(c)
-				if nil != err {
-					return cli.NewExitError(err, 1)
-				}
-
-				err = manager.Restore()
-				if nil != err {
-					return cli.NewExitError(err, 1)
-				}
-
-				return nil
-			},
-		},
+		exportCommand,
+		importCommand,
+		restoreCommand,
 	}
 
 	err := app.Run(os.Args)
@@ -110,12 +59,16 @@ func NewCliDFManager(c *cli.Context) (*dfmanager.Manager, error) {
 		return nil, err
 	}
 
+	return dfmanager.NewManager(key, project)
+}
+
+//getFile parses filename from incoming parameters
+func getFile(c *cli.Context) (string, error) {
 	f, err := getArg(c, "file", false)
 	if nil != err {
-		return nil, err
+		return "", err
 	}
-
-	return dfmanager.NewManager(key, project, f)
+	return f, nil
 }
 
 //getArg grabs arg value from the context
@@ -135,3 +88,74 @@ func getKey(c *cli.Context) ([]byte, error) {
 	}
 	return ioutil.ReadFile(key)
 }
+
+var (
+	exportCommand = cli.Command{
+		Name:    "export",
+		Aliases: []string{"e"},
+		Usage:   "exports agent from dialogflow",
+		Action: func(c *cli.Context) error {
+			manager, err := NewCliDFManager(c)
+			if nil != err {
+				return cli.NewExitError(err, 1)
+			}
+			f, err := getFile(c)
+			if nil != err {
+				return cli.NewExitError(err, 1)
+			}
+
+			err = manager.Export(f)
+			if nil != err {
+				return cli.NewExitError(err, 1)
+			}
+
+			return nil
+		},
+	}
+
+	importCommand = cli.Command{
+		Name:    "import",
+		Aliases: []string{"i"},
+		Usage:   "imports agent to dialogflow",
+		Action: func(c *cli.Context) error {
+			manager, err := NewCliDFManager(c)
+			if nil != err {
+				return cli.NewExitError(err, 1)
+			}
+			f, err := getFile(c)
+			if nil != err {
+				return cli.NewExitError(err, 1)
+			}
+
+			err = manager.Import(f)
+			if nil != err {
+				return cli.NewExitError(err, 1)
+			}
+
+			return nil
+		},
+	}
+
+	restoreCommand = cli.Command{
+		Name:    "restore",
+		Aliases: []string{"r"},
+		Usage:   "restores (replaces) agent in dialogflow",
+		Action: func(c *cli.Context) error {
+			manager, err := NewCliDFManager(c)
+			if nil != err {
+				return cli.NewExitError(err, 1)
+			}
+			f, err := getFile(c)
+			if nil != err {
+				return cli.NewExitError(err, 1)
+			}
+
+			err = manager.Restore(f)
+			if nil != err {
+				return cli.NewExitError(err, 1)
+			}
+
+			return nil
+		},
+	}
+)

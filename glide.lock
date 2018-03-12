@@ -1,28 +1,28 @@
 hash: 88998ea6674af6f450557ad3d7359ca0cac9cdf969a869792ab1d8167ffc7f8c
-updated: 2018-02-02T19:07:44.539615+03:00
+updated: 2018-03-09T23:42:26.096798+03:00
 imports:
 - name: cloud.google.com/go
-  version: 2de512d2700d45e7db3bc7b5decfa0a6713a252c
+  version: 4f6c921ec566a33844f4e7879b31cd8575a6982d
   subpackages:
   - compute/metadata
 - name: github.com/golang/protobuf
-  version: 925541529c1fa6821df4e44ce2723319eb2be768
+  version: bbd03ef6da3a115852eaf24c8a1c46aeb39aa175
   subpackages:
   - proto
 - name: golang.org/x/net
-  version: b417086c80e91bfa321ef761574721644b8b9f61
+  version: 2fb46b16b8dda405028c50f7c7f0f9dd1fa6bfb1
   subpackages:
   - context
   - context/ctxhttp
 - name: golang.org/x/oauth2
-  version: a032972e28060ca4f5644acffae3dfc268cc09db
+  version: 543e37812f10c46c622c9575afd7ad22f22a12ba
   subpackages:
   - google
   - internal
   - jws
   - jwt
 - name: google.golang.org/api
-  version: f7618f4b41caffc0e9f141e6f67957587341dde2
+  version: e771abbff930c1ae3c6e2c35117fc88856f11b2f
   subpackages:
   - dialogflow/v2beta1
   - gensupport
@@ -54,9 +54,9 @@ testImports:
   subpackages:
   - log
 - name: github.com/sirupsen/logrus
-  version: 768a92a02685ee7535069fc1581341b41bab9b72
+  version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
 - name: golang.org/x/crypto
-  version: 1875d0a70c90e57f11972aefd42276df65e895b9
+  version: d9133f5469342136e669e85192a26056b587f503
   subpackages:
   - ssh/terminal
 - name: golang.org/x/sys

@@ -16,23 +16,22 @@ import (
 
 //Manager in charge of all actions related to DialogFlow
 type Manager struct {
-	srv   *dialogflow.Service
-	prj   string
-	fName string
+	srv *dialogflow.Service
+	prj string
 }
 
 //NewManager parses cli context and builds DFManager instance based on provided args
-func NewManager(prjKey []byte, prjName, fName string) (*Manager, error) {
+func NewManager(prjKey []byte, prjName string) (*Manager, error) {
 	service, err := buildClient(prjKey)
 	if nil != err {
 		return nil, err
 	}
-	return &Manager{srv: service, prj: prjName, fName: fName}, nil
+	return &Manager{srv: service, prj: prjName}, nil
 }
 
 //Export downloads Dialogflow agent and saves to file
 //If file name is not provided, file with GCP project name and extension .zip will be created in work directory
-func (m *Manager) Export() error {
+func (m *Manager) Export(fName string) error {
 
 	fmt.Println("Exporting agent...")
 	rs, err := m.srv.Projects.Agent.Export("projects/"+m.prj, &dialogflow.GoogleCloudDialogflowV2beta1ExportAgentRequest{}).Do()
@@ -49,7 +48,7 @@ func (m *Manager) Export() error {
 		return err
 	}
 
-	f, err := os.Create(m.getFilename())
+	f, err := os.Create(m.getFilename(fName))
 	if nil != err {
 		return err
 	}
@@ -71,8 +70,8 @@ func (m *Manager) Export() error {
 }
 
 //Import reads archive and uploads it to Dialogflow
-func (m *Manager) Import() error {
-	cont, err := m.readAgentContent()
+func (m *Manager) Import(fName string) error {
+	cont, err := m.readAgentContent(fName)
 	if nil != err {
 		return err
 	}
@@ -95,8 +94,8 @@ func (m *Manager) Import() error {
 }
 
 //Restore reads archive and restores it in Dialogflow
-func (m *Manager) Restore() error {
-	cont, err := m.readAgentContent()
+func (m *Manager) Restore(fName string) error {
+	cont, err := m.readAgentContent(fName)
 	if nil != err {
 		return err
 	}
@@ -118,9 +117,9 @@ func (m *Manager) Restore() error {
 
 }
 
-func (m *Manager) readAgentContent() (string, error) {
+func (m *Manager) readAgentContent(fName string) (string, error) {
 	fmt.Println("Reading agent content...")
-	f, err := os.Open(m.getFilename())
+	f, err := os.Open(m.getFilename(fName))
 	if nil != err {
 		return "", err
 	}
@@ -142,16 +141,15 @@ func (m *Manager) readAgentContent() (string, error) {
 }
 
 //getFilename uses provided file name or builds default one based on project name
-func (m *Manager) getFilename() string {
-	var fname string
-	if "" == m.fName {
-		fname = m.prj + ".zip"
-	} else if !strings.HasSuffix(m.fName, ".zip") {
-		fname = m.fName + ".zip"
+func (m *Manager) getFilename(fName string) (name string) {
+	if "" == fName {
+		name = m.prj + ".zip"
+	} else if !strings.HasSuffix(fName, ".zip") {
+		name = fName + ".zip"
 	} else {
-		fname = m.fName
+		name = fName
 	}
-	return fname
+	return
 }
 
 func buildClient(key []byte) (*dialogflow.Service, error) {
