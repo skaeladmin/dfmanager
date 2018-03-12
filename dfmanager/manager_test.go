@@ -15,7 +15,7 @@ func ExampleManager() {
 	m, err := NewManager(f, "myDFProject")
 	checkError(err)
 
-	err = m.Export("export.zip")
+	err = m.ExportToFile("export.zip")
 	checkError(err)
 }
 

@@ -104,7 +104,7 @@ var (
 				return cli.NewExitError(err, 1)
 			}
 
-			err = manager.Export(f)
+			err = manager.ExportToFile(f)
 			if nil != err {
 				return cli.NewExitError(err, 1)
 			}

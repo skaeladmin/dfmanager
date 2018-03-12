@@ -29,21 +29,11 @@ func NewManager(prjKey []byte, prjName string) (*Manager, error) {
 	return &Manager{srv: service, prj: prjName}, nil
 }
 
-//Export downloads Dialogflow agent and saves to file
+//ExportToFile downloads Dialogflow agent and saves to file
 //If file name is not provided, file with GCP project name and extension .zip will be created in work directory
-func (m *Manager) Export(fName string) error {
+func (m *Manager) ExportToFile(fName string) error {
 
-	fmt.Println("Exporting agent...")
-	rs, err := m.srv.Projects.Agent.Export("projects/"+m.prj, &dialogflow.GoogleCloudDialogflowV2beta1ExportAgentRequest{}).Do()
-	if nil != err {
-		return err
-	}
-	if nil != rs.Error {
-		return errors.New(rs.Error.Message)
-	}
-
-	var exportRS dialogflow.GoogleCloudDialogflowV2beta1ExportAgentResponse
-	err = json.Unmarshal(rs.Response, &exportRS)
+	content, err := m.Export()
 	if nil != err {
 		return err
 	}
@@ -55,7 +45,7 @@ func (m *Manager) Export(fName string) error {
 	defer f.Close()
 
 	w := bufio.NewWriter(f)
-	_, err = w.ReadFrom(base64.NewDecoder(base64.StdEncoding, strings.NewReader(exportRS.AgentContent)))
+	_, err = w.ReadFrom(base64.NewDecoder(base64.StdEncoding, strings.NewReader(content)))
 	if nil != err {
 		return err
 	}
@@ -69,15 +59,40 @@ func (m *Manager) Export(fName string) error {
 
 }
 
-//Import reads archive and uploads it to Dialogflow
-func (m *Manager) Import(fName string) error {
+//Export downloads Dialogflow agent and returns it as BASE64 encoded zip archive string
+func (m *Manager) Export() (string, error) {
+
+	fmt.Println("Exporting agent...")
+	rs, err := m.srv.Projects.Agent.Export("projects/"+m.prj, &dialogflow.GoogleCloudDialogflowV2beta1ExportAgentRequest{}).Do()
+	if nil != err {
+		return "", err
+	}
+	if nil != rs.Error {
+		return "", errors.New(rs.Error.Message)
+	}
+
+	var exportRS dialogflow.GoogleCloudDialogflowV2beta1ExportAgentResponse
+	err = json.Unmarshal(rs.Response, &exportRS)
+	if nil != err {
+		return "", err
+	}
+
+	return exportRS.AgentContent, nil
+}
+
+//ImportFile reads archive and uploads it to Dialogflow
+func (m *Manager) ImportFile(fName string) error {
 	cont, err := m.readAgentContent(fName)
 	if nil != err {
 		return err
 	}
+	return m.Import(cont)
+}
 
+//Import expects content to be BASE64 encoded zip agent content
+func (m *Manager) Import(content string) error {
 	rq := &dialogflow.GoogleCloudDialogflowV2beta1ImportAgentRequest{}
-	rq.AgentContent = cont
+	rq.AgentContent = content
 
 	fmt.Println("Importing agent from backup...")
 	rs, err := m.srv.Projects.Agent.Import("projects/"+m.prj, rq).Do()
@@ -93,15 +108,21 @@ func (m *Manager) Import(fName string) error {
 
 }
 
-//Restore reads archive and restores it in Dialogflow
-func (m *Manager) Restore(fName string) error {
+//RestoreFile reads archive and restores it in Dialogflow
+func (m *Manager) RestoreFile(fName string) error {
 	cont, err := m.readAgentContent(fName)
 	if nil != err {
 		return err
 	}
+	return m.Restore(cont)
+
+}
+
+//Restore reads content (BASE64 encoded agent zip archive) and restores it in Dialogflow
+func (m *Manager) Restore(content string) error {
 
 	rq := &dialogflow.GoogleCloudDialogflowV2beta1RestoreAgentRequest{}
-	rq.AgentContent = cont
+	rq.AgentContent = content
 
 	fmt.Println("Restoring agent from backup...")
 	rs, err := m.srv.Projects.Agent.Restore("projects/"+m.prj, rq).Do()
