@@ -9,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/dialogflow/v2beta1"
+	"google.golang.org/api/dialogflow/v2"
 	"os"
 	"strings"
 )
@@ -63,7 +63,7 @@ func (m *Manager) ExportToFile(fName string) error {
 func (m *Manager) Export() (string, error) {
 
 	fmt.Println("Exporting agent...")
-	rs, err := m.srv.Projects.Agent.Export("projects/"+m.prj, &dialogflow.GoogleCloudDialogflowV2beta1ExportAgentRequest{}).Do()
+	rs, err := m.srv.Projects.Agent.Export("projects/"+m.prj, &dialogflow.GoogleCloudDialogflowV2ExportAgentRequest{}).Do()
 	if nil != err {
 		return "", err
 	}
@@ -91,7 +91,7 @@ func (m *Manager) ImportFile(fName string) error {
 
 //Import expects content to be BASE64 encoded zip agent content
 func (m *Manager) Import(content string) error {
-	rq := &dialogflow.GoogleCloudDialogflowV2beta1ImportAgentRequest{}
+	rq := &dialogflow.GoogleCloudDialogflowV2ImportAgentRequest{}
 	rq.AgentContent = content
 
 	fmt.Println("Importing agent from backup...")
@@ -121,7 +121,7 @@ func (m *Manager) RestoreFile(fName string) error {
 //Restore reads content (BASE64 encoded agent zip archive) and restores it in Dialogflow
 func (m *Manager) Restore(content string) error {
 
-	rq := &dialogflow.GoogleCloudDialogflowV2beta1RestoreAgentRequest{}
+	rq := &dialogflow.GoogleCloudDialogflowV2RestoreAgentRequest{}
 	rq.AgentContent = content
 
 	fmt.Println("Restoring agent from backup...")

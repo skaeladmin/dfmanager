@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/prometheus/common/log"
-	"google.golang.org/api/dialogflow/v2beta1"
+	"google.golang.org/api/dialogflow/v2"
 )
 
 func ExampleManager() {

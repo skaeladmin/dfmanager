@@ -5,6 +5,6 @@ import:
   - google
 - package: google.golang.org/api
   subpackages:
-  - dialogflow/v2beta1
+  - dialogflow/v2
 - package: gopkg.in/urfave/cli.v1
   version: ^1.20.0
