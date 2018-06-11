@@ -118,6 +118,37 @@ func (m *Manager) RestoreFile(fName string) error {
 
 }
 
+//ListEntityTypes reads and returns list of all entities that belong to the project
+func (m *Manager) ListEntityTypes() ([]*dialogflow.GoogleCloudDialogflowV2EntityType, error) {
+	fmt.Println("List entity types...")
+	rs, err := m.srv.Projects.Agent.EntityTypes.List("projects/" + m.prj + "/agent").Do()
+	if nil != err {
+		return nil, err
+	}
+	return rs.EntityTypes, nil
+
+}
+
+//BatchUpdateEntities updates entities for one given group in batch manner
+func (m *Manager) BatchUpdateEntities(name string, entities []*dialogflow.GoogleCloudDialogflowV2EntityTypeEntity) error {
+	rs, err := m.srv.Projects.Agent.EntityTypes.BatchUpdate("projects/"+m.prj+"/agent", &dialogflow.GoogleCloudDialogflowV2BatchUpdateEntityTypesRequest{
+		EntityTypeBatchInline: &dialogflow.GoogleCloudDialogflowV2EntityTypeBatch{
+			EntityTypes: []*dialogflow.GoogleCloudDialogflowV2EntityType{{
+				Entities: entities,
+				Name:     name,
+			}}},
+	}).Do()
+	if nil != err {
+		return err
+	}
+	if nil != rs.Error {
+		return errors.New(rs.Error.Message)
+	}
+
+	fmt.Println("Entities udpated successfully")
+	return nil
+}
+
 //Restore reads content (BASE64 encoded agent zip archive) and restores it in Dialogflow
 func (m *Manager) Restore(content string) error {
 
