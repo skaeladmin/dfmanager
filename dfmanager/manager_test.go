@@ -20,7 +20,7 @@ func ExampleManager() {
 }
 
 func checkError(err error) {
-	if nil != err {
+	if err != nil {
 		log.Fatal(err)
 	}
 }
@@ -53,13 +53,14 @@ func TestManager_getFilename(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		ttt := tt
+		t.Run(ttt.name, func(t *testing.T) {
 			m := &Manager{
-				srv: tt.fields.srv,
-				prj: tt.fields.prj,
+				srv: ttt.fields.srv,
+				prj: ttt.fields.prj,
 			}
-			if got := m.getFilename(tt.fields.fName); got != tt.want {
-				t.Errorf("Manager.getFilename() = %v, want %v", got, tt.want)
+			if got := m.getFilename(ttt.fields.fName); got != ttt.want {
+				t.Errorf("Manager.getFilename() = %v, want %v", got, ttt.want)
 			}
 		})
 	}

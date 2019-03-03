@@ -8,10 +8,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/dialogflow/v2"
 	"os"
 	"strings"
+
+	"github.com/prometheus/common/log"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/dialogflow/v2"
 )
 
 //Manager in charge of all actions related to DialogFlow
@@ -23,7 +25,7 @@ type Manager struct {
 //NewManager parses cli context and builds DFManager instance based on provided args
 func NewManager(prjKey []byte, prjName string) (*Manager, error) {
 	service, err := buildClient(prjKey)
-	if nil != err {
+	if err != nil {
 		return nil, err
 	}
 	return &Manager{srv: service, prj: prjName}, nil
@@ -34,24 +36,28 @@ func NewManager(prjKey []byte, prjName string) (*Manager, error) {
 func (m *Manager) ExportToFile(fName string) error {
 
 	content, err := m.Export()
-	if nil != err {
+	if err != nil {
 		return err
 	}
 
 	f, err := os.Create(m.getFilename(fName))
-	if nil != err {
+	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if closeErr := f.Close(); closeErr != nil {
+			log.Fatal(closeErr)
+		}
+	}()
 
 	w := bufio.NewWriter(f)
 	_, err = w.ReadFrom(base64.NewDecoder(base64.StdEncoding, strings.NewReader(content)))
-	if nil != err {
+	if err != nil {
 		return err
 	}
 
 	err = w.Flush()
-	if nil != err {
+	if err != nil {
 		return err
 	}
 
@@ -64,16 +70,16 @@ func (m *Manager) Export() (string, error) {
 
 	fmt.Println("Exporting agent...")
 	rs, err := m.srv.Projects.Agent.Export("projects/"+m.prj, &dialogflow.GoogleCloudDialogflowV2ExportAgentRequest{}).Do()
-	if nil != err {
+	if err != nil {
 		return "", err
 	}
-	if nil != rs.Error {
+	if rs.Error != nil {
 		return "", errors.New(rs.Error.Message)
 	}
 
 	var exportRS dialogflow.GoogleCloudDialogflowV2beta1ExportAgentResponse
 	err = json.Unmarshal(rs.Response, &exportRS)
-	if nil != err {
+	if err != nil {
 		return "", err
 	}
 
@@ -83,7 +89,7 @@ func (m *Manager) Export() (string, error) {
 //ImportFile reads archive and uploads it to Dialogflow
 func (m *Manager) ImportFile(fName string) error {
 	cont, err := m.readAgentContent(fName)
-	if nil != err {
+	if err != nil {
 		return err
 	}
 	return m.Import(cont)
@@ -96,10 +102,10 @@ func (m *Manager) Import(content string) error {
 
 	fmt.Println("Importing agent from backup...")
 	rs, err := m.srv.Projects.Agent.Import("projects/"+m.prj, rq).Do()
-	if nil != err {
+	if err != nil {
 		return err
 	}
-	if nil != rs.Error {
+	if rs.Error != nil {
 		return errors.New(rs.Error.Message)
 	}
 
@@ -111,7 +117,7 @@ func (m *Manager) Import(content string) error {
 //RestoreFile reads archive and restores it in Dialogflow
 func (m *Manager) RestoreFile(fName string) error {
 	cont, err := m.readAgentContent(fName)
-	if nil != err {
+	if err != nil {
 		return err
 	}
 	return m.Restore(cont)
@@ -122,26 +128,27 @@ func (m *Manager) RestoreFile(fName string) error {
 func (m *Manager) ListEntityTypes() ([]*dialogflow.GoogleCloudDialogflowV2EntityType, error) {
 	fmt.Println("List entity types...")
 	rs, err := m.srv.Projects.Agent.EntityTypes.List("projects/" + m.prj + "/agent").Do()
-	if nil != err {
+	if err != nil {
 		return nil, err
 	}
 	return rs.EntityTypes, nil
-
 }
 
 //BatchUpdateEntities updates entities for one given group in batch manner
 func (m *Manager) BatchUpdateEntities(name string, entities []*dialogflow.GoogleCloudDialogflowV2EntityTypeEntity) error {
-	rs, err := m.srv.Projects.Agent.EntityTypes.BatchUpdate("projects/"+m.prj+"/agent", &dialogflow.GoogleCloudDialogflowV2BatchUpdateEntityTypesRequest{
-		EntityTypeBatchInline: &dialogflow.GoogleCloudDialogflowV2EntityTypeBatch{
-			EntityTypes: []*dialogflow.GoogleCloudDialogflowV2EntityType{{
-				Entities: entities,
-				Name:     name,
-			}}},
-	}).Do()
-	if nil != err {
+	rs, err := m.srv.Projects.Agent.EntityTypes.BatchUpdate(
+		"projects/"+m.prj+"/agent",
+		&dialogflow.GoogleCloudDialogflowV2BatchUpdateEntityTypesRequest{
+			EntityTypeBatchInline: &dialogflow.GoogleCloudDialogflowV2EntityTypeBatch{
+				EntityTypes: []*dialogflow.GoogleCloudDialogflowV2EntityType{{
+					Entities: entities,
+					Name:     name,
+				}}},
+		}).Do()
+	if err != nil {
 		return err
 	}
-	if nil != rs.Error {
+	if rs.Error != nil {
 		return errors.New(rs.Error.Message)
 	}
 
@@ -157,10 +164,10 @@ func (m *Manager) Restore(content string) error {
 
 	fmt.Println("Restoring agent from backup...")
 	rs, err := m.srv.Projects.Agent.Restore("projects/"+m.prj, rq).Do()
-	if nil != err {
+	if err != nil {
 		return err
 	}
-	if nil != rs.Error {
+	if rs.Error != nil {
 		return errors.New(rs.Error.Message)
 	}
 
@@ -172,20 +179,24 @@ func (m *Manager) Restore(content string) error {
 func (m *Manager) readAgentContent(fName string) (string, error) {
 	fmt.Println("Reading agent content...")
 	f, err := os.Open(m.getFilename(fName))
-	if nil != err {
+	if err != nil {
 		return "", err
 	}
-	defer f.Close()
+	defer func() {
+		if closeErr := f.Close(); closeErr != nil {
+			log.Error(closeErr)
+		}
+	}()
 
 	var buf bytes.Buffer
 	w := bufio.NewWriter(base64.NewEncoder(base64.StdEncoding, &buf))
 	_, err = w.ReadFrom(f)
-	if nil != err {
+	if err != nil {
 		return "", err
 	}
 
 	err = w.Flush()
-	if nil != err {
+	if err != nil {
 		return "", err
 	}
 
@@ -194,11 +205,13 @@ func (m *Manager) readAgentContent(fName string) (string, error) {
 
 //getFilename uses provided file name or builds default one based on project name
 func (m *Manager) getFilename(fName string) (name string) {
-	if "" == fName {
+
+	switch {
+	case fName == "":
 		name = m.prj + ".zip"
-	} else if !strings.HasSuffix(fName, ".zip") {
+	case !strings.HasSuffix(fName, ".zip"):
 		name = fName + ".zip"
-	} else {
+	default:
 		name = fName
 	}
 	return

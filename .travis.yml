@@ -1,10 +1,16 @@
 sudo: false
 language: go
 go:
-  - 1.9
+  - "1.12.x"
+
+env:
+  - GO111MODULE=on
+
+before_script:
+  - make get-build-deps
 
 script:
-  - make get-build-deps vendor build
+  - make build
 
 after_success:
  - curl --request POST "https://goreportcard.com/checks" --data "repo=github.com/skaeladmin/dfmanager"

@@ -17,18 +17,15 @@ help:
 	@echo "checkstyle - gofmt+golint+misspell"
 
 get-build-deps:
-	$(GO) get github.com/alecthomas/gometalinter
-	gometalinter --install
+	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.15.0
 
-vendor:
-	$(if $(shell which glide 2>/dev/null),$(echo "Glide is already installed..."),$(shell go get github.com/Masterminds/glide))
-	glide install --strip-vendor
 
 test:
 	$(GO) test ${GODIRS_NOVENDOR}
 
 checkstyle:
-	gometalinter --vendor ./... --fast --deadline 10m
+	bin/golangci-lint run --enable-all ./...
+
 
 fmt:
 	gofmt -l -w -s ${GOFILES_NOVENDOR}

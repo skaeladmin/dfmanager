@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/skaeladmin/dfmanager/dfmanager"
-	"gopkg.in/urfave/cli.v1"
 	"io/ioutil"
-	"log"
 	"os"
+	"path/filepath"
+
+	"github.com/prometheus/common/log"
+	"github.com/skaeladmin/dfmanager/dfmanager"
+	cli "gopkg.in/urfave/cli.v1"
 )
 
 var version = "master"
@@ -41,21 +43,21 @@ func main() {
 		restoreCommand,
 	}
 
-	err := app.Run(os.Args)
-	if nil != err {
+	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
+
 }
 
 //NewCliDFManager parses cli context and builds DFManager instance based on provided args
 func NewCliDFManager(c *cli.Context) (*dfmanager.Manager, error) {
 	key, err := getKey(c)
-	if nil != err {
+	if err != nil {
 		return nil, err
 	}
 
 	project, err := getArg(c, "project", true)
-	if nil != err {
+	if err != nil {
 		return nil, err
 	}
 
@@ -65,7 +67,7 @@ func NewCliDFManager(c *cli.Context) (*dfmanager.Manager, error) {
 //getFile parses filename from incoming parameters
 func getFile(c *cli.Context) (string, error) {
 	f, err := getArg(c, "file", false)
-	if nil != err {
+	if err != nil {
 		return "", err
 	}
 	return f, nil
@@ -75,7 +77,7 @@ func getFile(c *cli.Context) (string, error) {
 //if argument is required, error in case of empty value will be sent
 func getArg(c *cli.Context, name string, required bool) (string, error) {
 	var val string
-	if val = c.GlobalString(name); "" == val && required {
+	if val = c.GlobalString(name); val == "" && required {
 		return "", fmt.Errorf("argument %s is missed", name)
 	}
 	return val, nil
@@ -83,10 +85,10 @@ func getArg(c *cli.Context, name string, required bool) (string, error) {
 
 func getKey(c *cli.Context) ([]byte, error) {
 	key, err := getArg(c, "key", true)
-	if nil != err {
+	if err != nil {
 		return nil, err
 	}
-	return ioutil.ReadFile(key)
+	return ioutil.ReadFile(filepath.Clean(key))
 }
 
 var (
@@ -119,16 +121,16 @@ var (
 		Usage:   "imports agent to dialogflow",
 		Action: func(c *cli.Context) error {
 			manager, err := NewCliDFManager(c)
-			if nil != err {
+			if err != nil {
 				return cli.NewExitError(err, 1)
 			}
 			f, err := getFile(c)
-			if nil != err {
+			if err != nil {
 				return cli.NewExitError(err, 1)
 			}
 
 			err = manager.Import(f)
-			if nil != err {
+			if err != nil {
 				return cli.NewExitError(err, 1)
 			}
 
@@ -142,16 +144,16 @@ var (
 		Usage:   "restores (replaces) agent in dialogflow",
 		Action: func(c *cli.Context) error {
 			manager, err := NewCliDFManager(c)
-			if nil != err {
+			if err != nil {
 				return cli.NewExitError(err, 1)
 			}
 			f, err := getFile(c)
-			if nil != err {
+			if err != nil {
 				return cli.NewExitError(err, 1)
 			}
 
 			err = manager.Restore(f)
-			if nil != err {
+			if err != nil {
 				return cli.NewExitError(err, 1)
 			}
 
