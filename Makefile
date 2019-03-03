@@ -24,7 +24,7 @@ test:
 	$(GO) test ${GODIRS_NOVENDOR}
 
 checkstyle:
-	bin/golangci-lint run --enable-all ./...
+	bin/golangci-lint run --deadline=5m --enable-all ./...
 
 
 fmt:
