@@ -1,35 +1,35 @@
 hash: 9f4994cc04a9fcb1aa308fe54f20c11b156f6ca2316341e821e7ac1aea6df151
-updated: 2018-04-25T00:16:35.500472+03:00
+updated: 2019-03-03T23:17:06.269735+03:00
 imports:
 - name: cloud.google.com/go
-  version: 29f476ffa9c4cd4fd14336b6043090ac1ad76733
+  version: c9474f2f8deb81759839474b6bd1726bbfe1c1c4
   subpackages:
   - compute/metadata
 - name: github.com/golang/protobuf
-  version: e09c5db296004fbe3f74490e84dcd62c3c5ddb1b
+  version: b5d812f8a3706043e23a9cd5babf2e5423744d30
   subpackages:
   - proto
 - name: golang.org/x/net
-  version: 5f9ae10d9af5b1c89ae6904293b14b064d4ada23
+  version: 16b79f2e4e95ea23b2bf9903c9809ff7b013ce85
   subpackages:
   - context
   - context/ctxhttp
 - name: golang.org/x/oauth2
-  version: 6881fee410a5daf86371371f9ad451b95e168b71
+  version: e64efc72b421e893cbf63f17ba2221e7d6d0b0f3
   subpackages:
   - google
   - internal
   - jws
   - jwt
 - name: google.golang.org/api
-  version: b08f8989af4899034b9816f5291a5bbb1bd576bb
+  version: 3127cb28a723bbc4166c461077c944c405ac4bf8
   subpackages:
   - dialogflow/v2
   - gensupport
   - googleapi
   - googleapi/internal/uritemplates
 - name: google.golang.org/appengine
-  version: 0a24098c0ec68416ec050f567f75df563d6b231e
+  version: 54a98f90d1c46b7731eb8fb305d2a321c30ef610
   subpackages:
   - internal
   - internal/app_identity
@@ -49,18 +49,20 @@ testImports:
   - parse
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: f55edac94c9bbba5d6182a4be46d86a2c9b5b50e
 - name: github.com/prometheus/common
-  version: d0f7cd64bda49e08b22ae8a730aa57aa0db125d6
+  version: 7a3416fd1f41341905f138746c51a5092e7ddf7a
   subpackages:
   - log
 - name: github.com/sirupsen/logrus
-  version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
+  version: e1e72e9de974bd926e5c56f83753fba2df402ce5
 - name: golang.org/x/crypto
-  version: e73bf333ef8920dbb52ad18d4bd38ad9d9bc76d7
+  version: 8dd112bcdc25174059e45e07517d9fc663123347
   subpackages:
   - ssh/terminal
 - name: golang.org/x/sys
-  version: 79b0c6888797020a994db17c8510466c72fe75d9
+  version: c2f5717e611cf8e89a852a41081355194d80c943
   subpackages:
   - unix
   - windows
