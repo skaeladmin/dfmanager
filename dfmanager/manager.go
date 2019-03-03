@@ -5,30 +5,33 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 
-	"github.com/prometheus/common/log"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/dialogflow/v2"
+	"google.golang.org/api/compute/v1"
+	"google.golang.org/api/option"
+	dfproto "google.golang.org/genproto/googleapis/cloud/dialogflow/v2"
+
+	dialogflow "cloud.google.com/go/dialogflow/apiv2"
+	"github.com/prometheus/common/log"
 )
 
 //Manager in charge of all actions related to DialogFlow
 type Manager struct {
-	srv *dialogflow.Service
+	ac  *dialogflow.AgentsClient
+	ec  *dialogflow.EntityTypesClient
 	prj string
 }
 
 //NewManager parses cli context and builds DFManager instance based on provided args
 func NewManager(prjKey []byte, prjName string) (*Manager, error) {
-	service, err := buildClient(prjKey)
+	ac, ec, err := buildClient(prjKey)
 	if err != nil {
 		return nil, err
 	}
-	return &Manager{srv: service, prj: prjName}, nil
+	return &Manager{ac: ac, ec: ec, prj: prjName}, nil
 }
 
 //ExportToFile downloads Dialogflow agent and saves to file
@@ -69,21 +72,18 @@ func (m *Manager) ExportToFile(fName string) error {
 func (m *Manager) Export() (string, error) {
 
 	fmt.Println("Exporting agent...")
-	rs, err := m.srv.Projects.Agent.Export("projects/"+m.prj, &dialogflow.GoogleCloudDialogflowV2ExportAgentRequest{}).Do()
+	expOperation, err := m.ac.ExportAgent(context.Background(), &dfproto.ExportAgentRequest{
+		Parent: "projects/" + m.prj,
+	})
 	if err != nil {
 		return "", err
 	}
-	if rs.Error != nil {
-		return "", errors.New(rs.Error.Message)
-	}
-
-	var exportRS dialogflow.GoogleCloudDialogflowV2beta1ExportAgentResponse
-	err = json.Unmarshal(rs.Response, &exportRS)
+	rs, err := expOperation.Wait(context.Background())
 	if err != nil {
 		return "", err
 	}
 
-	return exportRS.AgentContent, nil
+	return string(rs.GetAgentContent()), nil
 }
 
 //ImportFile reads archive and uploads it to Dialogflow
@@ -97,16 +97,20 @@ func (m *Manager) ImportFile(fName string) error {
 
 //Import expects content to be BASE64 encoded zip agent content
 func (m *Manager) Import(content string) error {
-	rq := &dialogflow.GoogleCloudDialogflowV2ImportAgentRequest{}
-	rq.AgentContent = content
 
 	fmt.Println("Importing agent from backup...")
-	rs, err := m.srv.Projects.Agent.Import("projects/"+m.prj, rq).Do()
+	rs, err := m.ac.ImportAgent(context.Background(), &dfproto.ImportAgentRequest{
+		Parent: "projects/" + m.prj,
+		Agent: &dfproto.ImportAgentRequest_AgentContent{
+			AgentContent: []byte(content),
+		},
+	})
 	if err != nil {
 		return err
 	}
-	if rs.Error != nil {
-		return errors.New(rs.Error.Message)
+
+	if err := rs.Wait(context.Background()); err != nil {
+		return err
 	}
 
 	fmt.Println("Import completed successfully")
@@ -125,31 +129,33 @@ func (m *Manager) RestoreFile(fName string) error {
 }
 
 //ListEntityTypes reads and returns list of all entities that belong to the project
-func (m *Manager) ListEntityTypes() ([]*dialogflow.GoogleCloudDialogflowV2EntityType, error) {
+func (m *Manager) ListEntityTypes() ([]*dfproto.EntityType, error) {
 	fmt.Println("List entity types...")
-	rs, err := m.srv.Projects.Agent.EntityTypes.List("projects/" + m.prj + "/agent").Do()
-	if err != nil {
-		return nil, err
+	rs := m.ec.ListEntityTypes(context.Background(), &dfproto.ListEntityTypesRequest{
+		Parent: "projects/" + m.prj + "/agent",
+	})
+
+	var all []*dfproto.EntityType
+	for next, err := rs.Next(); err != nil; {
+		all = append(all, next)
 	}
-	return rs.EntityTypes, nil
+
+	return all, nil
 }
 
 //BatchUpdateEntities updates entities for one given group in batch manner
-func (m *Manager) BatchUpdateEntities(name string, entities []*dialogflow.GoogleCloudDialogflowV2EntityTypeEntity) error {
-	rs, err := m.srv.Projects.Agent.EntityTypes.BatchUpdate(
-		"projects/"+m.prj+"/agent",
-		&dialogflow.GoogleCloudDialogflowV2BatchUpdateEntityTypesRequest{
-			EntityTypeBatchInline: &dialogflow.GoogleCloudDialogflowV2EntityTypeBatch{
-				EntityTypes: []*dialogflow.GoogleCloudDialogflowV2EntityType{{
-					Entities: entities,
-					Name:     name,
-				}}},
-		}).Do()
+func (m *Manager) BatchUpdateEntities(name string, entities []*dfproto.EntityType_Entity) error {
+	rs, err := m.ec.BatchUpdateEntities(context.Background(),
+		&dfproto.BatchUpdateEntitiesRequest{
+			Parent:   "projects/" + m.prj + "/agent",
+			Entities: entities,
+		})
 	if err != nil {
 		return err
 	}
-	if rs.Error != nil {
-		return errors.New(rs.Error.Message)
+	err = rs.Wait(context.Background())
+	if err != nil {
+		return err
 	}
 
 	fmt.Println("Entities udpated successfully")
@@ -159,16 +165,18 @@ func (m *Manager) BatchUpdateEntities(name string, entities []*dialogflow.Google
 //Restore reads content (BASE64 encoded agent zip archive) and restores it in Dialogflow
 func (m *Manager) Restore(content string) error {
 
-	rq := &dialogflow.GoogleCloudDialogflowV2RestoreAgentRequest{}
-	rq.AgentContent = content
-
 	fmt.Println("Restoring agent from backup...")
-	rs, err := m.srv.Projects.Agent.Restore("projects/"+m.prj, rq).Do()
+	rs, err := m.ac.RestoreAgent(context.Background(), &dfproto.RestoreAgentRequest{
+		Parent: "projects/" + m.prj,
+		Agent: &dfproto.RestoreAgentRequest_AgentContent{
+			AgentContent: []byte(content),
+		},
+	})
 	if err != nil {
 		return err
 	}
-	if rs.Error != nil {
-		return errors.New(rs.Error.Message)
+	if err := rs.Wait(context.Background()); err != nil {
+		return err
 	}
 
 	fmt.Println("Restore completed successfully")
@@ -205,7 +213,7 @@ func (m *Manager) readAgentContent(fName string) (string, error) {
 
 //getFilename uses provided file name or builds default one based on project name
 func (m *Manager) getFilename(fName string) (name string) {
-
+	fmt.Println(fName)
 	switch {
 	case fName == "":
 		name = m.prj + ".zip"
@@ -217,10 +225,21 @@ func (m *Manager) getFilename(fName string) (name string) {
 	return
 }
 
-func buildClient(key []byte) (*dialogflow.Service, error) {
-	jwtConfig, err := google.JWTConfigFromJSON(key, dialogflow.CloudPlatformScope)
+func buildClient(key []byte) (*dialogflow.AgentsClient, *dialogflow.EntityTypesClient, error) {
+
+	jwtConfig, err := google.JWTConfigFromJSON(key, compute.CloudPlatformScope)
 	if err != nil {
-		return nil, fmt.Errorf("cannot build GCE compute service: %s", err)
+		return nil, nil, fmt.Errorf("cannot build GCE compute service: %s", err)
 	}
-	return dialogflow.New(jwtConfig.Client(context.TODO()))
+
+	auth := option.WithTokenSource(jwtConfig.TokenSource(context.Background()))
+	ac, err := dialogflow.NewAgentsClient(context.Background(), auth)
+	if err != nil {
+		return nil, nil, err
+	}
+	ec, err := dialogflow.NewEntityTypesClient(context.Background(), auth)
+	if err != nil {
+		return nil, nil, err
+	}
+	return ac, ec, err
 }

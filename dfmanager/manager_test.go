@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/prometheus/common/log"
-	"google.golang.org/api/dialogflow/v2"
 )
 
 func ExampleManager() {
@@ -27,7 +26,6 @@ func checkError(err error) {
 
 func TestManager_getFilename(t *testing.T) {
 	type fields struct {
-		srv   *dialogflow.Service
 		prj   string
 		fName string
 	}
@@ -56,7 +54,6 @@ func TestManager_getFilename(t *testing.T) {
 		ttt := tt
 		t.Run(ttt.name, func(t *testing.T) {
 			m := &Manager{
-				srv: ttt.fields.srv,
 				prj: ttt.fields.prj,
 			}
 			if got := m.getFilename(ttt.fields.fName); got != ttt.want {

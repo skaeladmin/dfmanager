@@ -3,7 +3,7 @@ module github.com/skaeladmin/dfmanager
 go 1.12
 
 require (
-	cloud.google.com/go v0.36.0 // indirect
+	cloud.google.com/go v0.36.0
 	dmitri.shuralyov.com/app/changes v0.0.0-20181114035150-5af16e21babb // indirect
 	dmitri.shuralyov.com/service/change v0.0.0-20190301072032-c25fb47d71b3 // indirect
 	git.apache.org/thrift.git v0.12.0 // indirect
@@ -59,7 +59,7 @@ require (
 	golang.org/x/sys v0.0.0-20190303192550-c2f5717e611c // indirect
 	golang.org/x/tools v0.0.0-20190228203856-589c23e65e65 // indirect
 	google.golang.org/api v0.1.0
-	google.golang.org/genproto v0.0.0-20190227213309-4f5b463f9597 // indirect
+	google.golang.org/genproto v0.0.0-20190227213309-4f5b463f9597
 	gopkg.in/urfave/cli.v1 v1.20.0
 	honnef.co/go/tools v0.0.0-20190215041234-466a0476246c // indirect
 	sourcegraph.com/sqs/pbtypes v1.0.0 // indirect
