@@ -129,7 +129,7 @@ var (
 				return cli.NewExitError(err, 1)
 			}
 
-			err = manager.Import(f)
+			err = manager.ImportFile(f)
 			if err != nil {
 				return cli.NewExitError(err, 1)
 			}
@@ -152,7 +152,7 @@ var (
 				return cli.NewExitError(err, 1)
 			}
 
-			err = manager.Restore(f)
+			err = manager.RestoreFile(f)
 			if err != nil {
 				return cli.NewExitError(err, 1)
 			}

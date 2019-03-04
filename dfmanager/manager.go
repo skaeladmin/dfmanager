@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"strings"
@@ -54,7 +53,7 @@ func (m *Manager) ExportToFile(fName string) error {
 	}()
 
 	w := bufio.NewWriter(f)
-	_, err = w.ReadFrom(base64.NewDecoder(base64.StdEncoding, strings.NewReader(content)))
+	_, err = w.ReadFrom(bytes.NewReader(content))
 	if err != nil {
 		return err
 	}
@@ -68,22 +67,22 @@ func (m *Manager) ExportToFile(fName string) error {
 
 }
 
-//Export downloads Dialogflow agent and returns it as BASE64 encoded zip archive string
-func (m *Manager) Export() (string, error) {
+//Export downloads Dialogflow agent and returns it as zip archive byte array
+func (m *Manager) Export() ([]byte, error) {
 
 	fmt.Println("Exporting agent...")
 	expOperation, err := m.ac.ExportAgent(context.Background(), &dfproto.ExportAgentRequest{
 		Parent: "projects/" + m.prj,
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	rs, err := expOperation.Wait(context.Background())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(rs.GetAgentContent()), nil
+	return rs.GetAgentContent(), nil
 }
 
 //ImportFile reads archive and uploads it to Dialogflow
@@ -95,14 +94,14 @@ func (m *Manager) ImportFile(fName string) error {
 	return m.Import(cont)
 }
 
-//Import expects content to be BASE64 encoded zip agent content
-func (m *Manager) Import(content string) error {
+//Import expects content to be zip file byte array agent content
+func (m *Manager) Import(content []byte) error {
 
 	fmt.Println("Importing agent from backup...")
 	rs, err := m.ac.ImportAgent(context.Background(), &dfproto.ImportAgentRequest{
 		Parent: "projects/" + m.prj,
 		Agent: &dfproto.ImportAgentRequest_AgentContent{
-			AgentContent: []byte(content),
+			AgentContent: content,
 		},
 	})
 	if err != nil {
@@ -162,14 +161,14 @@ func (m *Manager) BatchUpdateEntities(name string, entities []*dfproto.EntityTyp
 	return nil
 }
 
-//Restore reads content (BASE64 encoded agent zip archive) and restores it in Dialogflow
-func (m *Manager) Restore(content string) error {
+//Restore reads content (agent zip archive) and restores it in Dialogflow
+func (m *Manager) Restore(content []byte) error {
 
 	fmt.Println("Restoring agent from backup...")
 	rs, err := m.ac.RestoreAgent(context.Background(), &dfproto.RestoreAgentRequest{
 		Parent: "projects/" + m.prj,
 		Agent: &dfproto.RestoreAgentRequest_AgentContent{
-			AgentContent: []byte(content),
+			AgentContent: content,
 		},
 	})
 	if err != nil {
@@ -184,11 +183,11 @@ func (m *Manager) Restore(content string) error {
 
 }
 
-func (m *Manager) readAgentContent(fName string) (string, error) {
+func (m *Manager) readAgentContent(fName string) ([]byte, error) {
 	fmt.Println("Reading agent content...")
 	f, err := os.Open(m.getFilename(fName))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer func() {
 		if closeErr := f.Close(); closeErr != nil {
@@ -197,18 +196,18 @@ func (m *Manager) readAgentContent(fName string) (string, error) {
 	}()
 
 	var buf bytes.Buffer
-	w := bufio.NewWriter(base64.NewEncoder(base64.StdEncoding, &buf))
+	w := bufio.NewWriter(&buf)
 	_, err = w.ReadFrom(f)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	err = w.Flush()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return buf.String(), nil
+	return buf.Bytes(), nil
 }
 
 //getFilename uses provided file name or builds default one based on project name
